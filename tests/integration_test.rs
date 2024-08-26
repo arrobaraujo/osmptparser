@@ -6,6 +6,7 @@ fn get_public_transports() {
     let ptsvec = parser.get_public_transports(1500_f64);
     let mut pts = ptsvec.iter().collect::<Vec<_>>();
     pts.sort_by(|a, b| a.id.cmp(&b.id));
+    assert_eq!(pts.iter().count(), 2);
     assert_eq!(pts[0].id, 85965);
     assert_eq!(pts[0].tags["name"], "Trolebus Quitumbe => La Y");
     assert_eq!(pts[0].info["version"], "226");
