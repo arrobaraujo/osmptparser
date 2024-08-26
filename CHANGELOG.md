@@ -1,3 +1,10 @@
+## v2.2.0
+
+Added filtering by negation
+
+ - Added: Filtering accepts negation with `!` before the key.
+ - Fixed: new_ptv2 was not getting the public transport relations.
+
 ## v2.1.0
 
 Added minor features
