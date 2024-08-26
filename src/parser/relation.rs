@@ -1,6 +1,5 @@
 use serde_json::json;
 use std::collections::HashMap;
-use std::f64::INFINITY;
 use std::fmt;
 
 use super::parse_status::ParseStatus;
@@ -154,13 +153,14 @@ fn first_pass(ways: &Vec<Vec<Node>>) -> Result<Vec<Vec<Node>>, ()> {
 /// Also joins the way if extreme points are the same
 /// - This is not "expected" by osm. We are trying to fix the way now
 /// - Nevertheless I think this is also done by ST_LineMerge()
+///
 /// TODO: this can probably be made with some std function like vec.sort(|nodesa, nodesb| edgedistance(nodesa, nodesb))
 fn sort_ways(ways: &Vec<Vec<Node>>) -> Result<Vec<Vec<Node>>, ()> {
     let mut ws = ways.to_owned();
     let mut sorted_ways = vec![ws[0].clone()];
     ws = ws[1..].to_vec();
     while !ws.is_empty() {
-        let mut mindist = INFINITY;
+        let mut mindist = f64::INFINITY;
         let mut minidx = 0usize;
         for (i, _) in ws.iter().enumerate() {
             let w = ws[i].clone();
@@ -202,7 +202,7 @@ fn dist_haversine(p1: &Node, p2: &Node) -> f64 {
 /// - I'm not sure if this conserves the direction from first to last
 fn join_ways(ways: &Vec<Vec<Node>>, tolerance: f64) -> Result<Vec<Vec<Node>>, ()> {
     let mut joined = vec![ways[0].clone()];
-    for w in ways[1..].to_vec() {
+    for w in ways[1..].iter().cloned() {
         let joined_len = joined.len();
         let joinedlast = joined[joined_len - 1].clone();
         if dist_haversine(&joinedlast[joinedlast.len() - 1], &w[0]) < tolerance {

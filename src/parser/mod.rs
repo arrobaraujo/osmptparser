@@ -661,10 +661,7 @@ impl Parser {
         .unwrap();
 
         // returns relations_ways + areas_ways
-        relations_ways
-            .into_iter()
-            .chain(areas_ways.into_iter())
-            .collect()
+        relations_ways.into_iter().chain(areas_ways).collect()
     }
 
     /// Builds the Relation from the provided osm_id `id`
