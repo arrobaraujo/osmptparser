@@ -162,7 +162,7 @@ impl Parser {
         Self::new(
             pbf_filename,
             cpus,
-            "name&route_master&route=bus,tram,train,subway,light_rail,monorail,trolleybus"
+            "name&!route_master&route=bus,tram,train,subway,light_rail,monorail,trolleybus"
                 .to_string(),
         )
     }
