@@ -82,24 +82,31 @@ pub struct ParserRelationIterator {
 /// of relations / ways / nodes, to build on the fly PublicTransport representations
 impl Parser {
     /// generic check using a filter of tag_conditions with the following format
-    /// "tag_key"
-    /// "tag_key=tag_value"
-    /// "tag_key=tag_value,tag_value2&tag_key2=tag_value3"
+    /// "tag_key" (has the tag with any value)
+    /// "!tag_key" (does not have the tag)
+    /// "tag_key=tag_value" (equality with one value)
+    /// "tag_key=!tag_value" (negation)
+    /// "tag_key=tag_value,tag_value2&tag_key2=tag_value3" (comma means OR, & means AND)
+    /// "tag_key=!tag_value,!tag_value2&tag_key2=tag_value3" (negation works with individual values)
     fn filter_relation(relation: &osm_pbf_iter::Relation, conditions: &String) -> bool {
         for condition in conditions.split('&') {
             let mut condition_split = condition.split('=');
             let condition_key = condition_split.next().unwrap().to_string();
             let condition_values = condition_split.next();
             let tag = relation.tags().find(|&kv| kv.0 == condition_key);
-            if tag == None {
+            if (condition_key.starts_with('!') && tag.is_some())
+                || (!condition_key.starts_with('!') && tag.is_none())
+            {
                 return false;
-            } else if condition_values != None {
+            } else if condition_values.is_some() {
                 let tag_value = tag.unwrap().1;
                 let condition_values_string = condition_values.unwrap().to_string();
                 let condition_values_split = condition_values_string.split(',');
                 let mut found = false;
                 for condition_value in condition_values_split {
-                    if tag_value == condition_value {
+                    if (condition_value.starts_with('!') && tag_value != &condition_value[1..])
+                        || (!condition_value.starts_with('!') && tag_value == condition_value)
+                    {
                         found = true;
                         break;
                     }
@@ -113,24 +120,31 @@ impl Parser {
     }
 
     /// generic check using a filter of tag_conditions with the following format
-    /// "tag_key"
-    /// "tag_key=tag_value"
-    /// "tag_key=tag_value,tag_value2&tag_key2=tag_value3"
+    /// "tag_key" (has the tag with any value)
+    /// "!tag_key" (does not have the tag)
+    /// "tag_key=tag_value" (equality with one value)
+    /// "tag_key=!tag_value" (negation)
+    /// "tag_key=tag_value,tag_value2&tag_key2=tag_value3" (comma means OR, & means AND)
+    /// "tag_key=!tag_value,!tag_value2&tag_key2=tag_value3" (negation works with individual values)
     fn filter_way(way: &osm_pbf_iter::Way, conditions: &String) -> bool {
         for condition in conditions.split('&') {
             let mut condition_split = condition.split('=');
             let condition_key = condition_split.next().unwrap().to_string();
             let condition_values = condition_split.next();
             let tag = way.tags().find(|&kv| kv.0 == condition_key);
-            if tag == None {
+            if (condition_key.starts_with('!') && tag.is_some())
+                || (!condition_key.starts_with('!') && tag.is_none())
+            {
                 return false;
-            } else if condition_values != None {
+            } else if condition_values.is_some() {
                 let tag_value = tag.unwrap().1;
                 let condition_values_string = condition_values.unwrap().to_string();
                 let condition_values_split = condition_values_string.split(',');
                 let mut found = false;
                 for condition_value in condition_values_split {
-                    if tag_value == condition_value {
+                    if (condition_value.starts_with('!') && tag_value != &condition_value[1..])
+                        || (!condition_value.starts_with('!') && tag_value == condition_value)
+                    {
                         found = true;
                         break;
                     }
