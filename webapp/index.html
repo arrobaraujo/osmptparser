@@ -20,6 +20,26 @@
 
             <section class="controls">
                 <div class="input-group">
+                    <label for="city-search">Explorar Cidade/Área</label>
+                    <div style="display: flex; gap: 0.5rem;">
+                        <input type="text" id="city-search" placeholder="Ex: Rio de Janeiro" style="flex: 1;">
+                        <button id="find-routes-btn" class="secondary-btn" title="Buscar linhas">
+                            <i data-lucide="map-pin"></i>
+                        </button>
+                    </div>
+                    <div id="discovery-results" class="discovery-results-container" style="display: none;">
+                        <div class="discovery-header">
+                            <span>Linhas encontradas</span>
+                            <button id="close-discovery" class="icon-btn">&times;</button>
+                        </div>
+                        <input type="text" id="route-filter" placeholder="Filtrar por nome ou número..." class="mini-input">
+                        <div id="routes-list" class="scroll-list"></div>
+                    </div>
+                </div>
+
+                <div class="divider"><span>OU</span></div>
+
+                <div class="input-group">
                     <label for="rel-id">ID da Relação</label>
                     <input type="text" id="rel-id" placeholder="Ex: 85965" value="85965">
                 </div>

@@ -29,6 +29,33 @@ function initMap() {
     layers.stops.addTo(map);
 }
 
+const OVERPASS_MIRRORS = [
+    'https://overpass-api.de/api/interpreter',
+    'https://overpass.kumi.systems/api/interpreter',
+    'https://lz4.overpass-api.de/api/interpreter',
+    'https://z.overpass-api.de/api/interpreter'
+];
+
+// Utilitário de fetch com fallback para múltiplos mirrors
+async function fetchWithFallback(query) {
+    if (window.location.protocol === 'file:') {
+        console.warn('Atenção: Rodar via protocolo file:// pode causar bloqueios de CORS em alguns navegadores. Recomenda-se usar um servidor local.');
+    }
+
+    for (const mirror of OVERPASS_MIRRORS) {
+        try {
+            console.log(`Tentando mirror Overpass: ${new URL(mirror).hostname}`);
+            const url = `${mirror}?data=${encodeURIComponent(query)}`;
+            const response = await fetch(url);
+            if (response.ok) return await response.json();
+            console.warn(`Mirror ${mirror} retornou erro ${response.status}`);
+        } catch (err) {
+            console.warn(`Falha de rede no mirror ${mirror}. Tentando próximo...`);
+        }
+    }
+    throw new Error('Não foi possível conectar a nenhum servidor Overpass. Verifique sua conexão ou tente novamente mais tarde.');
+}
+
 // Busca de dados via Overpass
 async function fetchRelationData(id) {
     const query = `[out:json][timeout:25];
@@ -36,14 +63,9 @@ async function fetchRelationData(id) {
         (._;>>;);
         out body;`;
     
-    const url = `https://overpass-api.de/api/interpreter?data=${encodeURIComponent(query)}`;
-    
     try {
-        const response = await fetch(url);
-        if (!response.ok) throw new Error('Falha ao buscar dados do Overpass');
-        return await response.ok ? response.json() : null;
+        return await fetchWithFallback(query);
     } catch (err) {
-        console.error(err);
         alert('Erro ao buscar dados: ' + err.message);
         return null;
     }
@@ -187,6 +209,67 @@ function renderResults(analysis, stops) {
     };
 }
 
+let allRoutes = []; // Global para armazenar as rotas encontradas na descoberta
+
+// Busca de rotas em uma área (Cidade)
+async function fetchRoutesInArea(cityName) {
+    const query = `[out:json][timeout:60];
+        area[name="${cityName}"]->.searchArea;
+        (
+          relation(area.searchArea)["type"="route"]["route"~"bus|tram|train|subway|light_rail|monorail|trolleybus"];
+        );
+        out tags;`;
+    
+    try {
+        const data = await fetchWithFallback(query);
+        return data.elements.map(el => ({
+            id: el.id,
+            name: el.tags.name || 'Sem nome',
+            ref: el.tags.ref || el.tags.route_ref || '',
+            route: el.tags.route || 'bus',
+            operator: el.tags.operator || ''
+        }));
+    } catch (err) {
+        alert('Erro ao buscar rotas: ' + err.message);
+        return [];
+    }
+}
+
+// Renderizar lista de descoberta filtrada
+function renderDiscoveryList(filter = '') {
+    const list = document.getElementById('routes-list');
+    list.innerHTML = '';
+    
+    const filtered = allRoutes.filter(r => 
+        r.name.toLowerCase().includes(filter.toLowerCase()) || 
+        r.ref.toLowerCase().includes(filter.toLowerCase()) ||
+        r.id.toString().includes(filter)
+    );
+
+    if (filtered.length === 0) {
+        list.innerHTML = '<p class="subtitle" style="padding: 1rem; text-align: center;">Nenhuma rota encontrada</p>';
+        return;
+    }
+
+    filtered.slice(0, 100).forEach(route => { // Limitar a 100 para performance
+        const item = document.createElement('div');
+        item.className = 'route-item';
+        item.innerHTML = `
+            <div class="route-info">
+                <span class="route-name">${route.name}</span>
+                <span class="route-ref">${route.ref}</span>
+            </div>
+            <div class="route-meta">${route.route.toUpperCase()} • ${route.operator} • ID: ${route.id}</div>
+        `;
+        item.onclick = () => {
+            document.getElementById('rel-id').value = route.id;
+            document.getElementById('discovery-results').style.display = 'none';
+            document.getElementById('analyze-btn').click();
+        };
+        list.appendChild(item);
+    });
+}
+
 // Ação do Botão Analisar
 document.getElementById('analyze-btn').addEventListener('click', async () => {
     const id = document.getElementById('rel-id').value;
@@ -212,7 +295,42 @@ document.getElementById('analyze-btn').addEventListener('click', async () => {
     btn.disabled = false;
 });
 
+// Eventos de Descoberta
+document.getElementById('find-routes-btn').addEventListener('click', async () => {
+    const city = document.getElementById('city-search').value;
+    if (!city) return alert('Digite o nome de uma cidade');
+
+    const btn = document.getElementById('find-routes-btn');
+    const originalContent = btn.innerHTML;
+    btn.innerHTML = '<div class="loader" style="width:14px; height:14px;"></div>';
+    btn.disabled = true;
+
+    allRoutes = await fetchRoutesInArea(city);
+    if (allRoutes.length > 0) {
+        document.getElementById('discovery-results').style.display = 'flex';
+        renderDiscoveryList();
+    } else {
+        alert('Nenhuma rota encontrada para esta área.');
+    }
+
+    btn.innerHTML = originalContent;
+    btn.disabled = false;
+});
+
+document.getElementById('city-search').addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') document.getElementById('find-routes-btn').click();
+});
+
+document.getElementById('route-filter').addEventListener('input', (e) => {
+    renderDiscoveryList(e.target.value);
+});
+
+document.getElementById('close-discovery').addEventListener('click', () => {
+    document.getElementById('discovery-results').style.display = 'none';
+});
+
 // Inicialização
 document.addEventListener('DOMContentLoaded', () => {
     initMap();
+    lucide.createIcons();
 });

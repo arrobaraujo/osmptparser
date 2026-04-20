@@ -199,6 +199,130 @@ button:active {
     to { transform: rotate(360deg); }
 }
 
+/* Discovery & Discovery Results */
+.divider {
+    display: flex;
+    align-items: center;
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 0.65rem;
+    font-weight: 700;
+    margin: 0.5rem 0;
+}
+
+.divider::before, .divider::after {
+    content: '';
+    flex: 1;
+    border-bottom: 1px solid var(--border);
+}
+
+.divider:not(:empty)::before {
+    margin-right: .5em;
+}
+
+.divider:not(:empty)::after {
+    margin-left: .5em;
+}
+
+.secondary-btn {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--border);
+    padding: 0.75rem;
+    width: auto;
+}
+
+.secondary-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+    box-shadow: none;
+}
+
+.discovery-results-container {
+    background: #1a1c26;
+    border: 1px solid var(--primary);
+    border-radius: 12px;
+    margin-top: 0.5rem;
+    padding: 0.75rem;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    max-height: 400px;
+}
+
+.discovery-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--primary);
+}
+
+.icon-btn {
+    background: none;
+    padding: 0;
+    font-size: 1.2rem;
+    color: var(--text-muted);
+    cursor: pointer;
+    width: auto;
+}
+
+.icon-btn:hover {
+    color: white;
+    transform: none;
+}
+
+.mini-input {
+    padding: 0.5rem;
+    font-size: 0.8rem;
+}
+
+.scroll-list {
+    overflow-y: auto;
+    max-height: 250px;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.route-item {
+    padding: 0.65rem;
+    border-radius: 6px;
+    background: rgba(255, 255, 255, 0.02);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: 1px solid transparent;
+}
+
+.route-item:hover {
+    background: rgba(59, 130, 246, 0.1);
+    border-color: rgba(59, 130, 246, 0.3);
+}
+
+.route-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 0.2rem;
+}
+
+.route-name {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text-main);
+}
+
+.route-ref {
+    font-size: 0.75rem;
+    color: var(--primary);
+    font-weight: 700;
+}
+
+.route-meta {
+    font-size: 0.7rem;
+    color: var(--text-muted);
+}
+
 /* Custom Scrollbar */
 ::-webkit-scrollbar {
     width: 6px;
