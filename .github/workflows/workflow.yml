@@ -7,22 +7,32 @@ permissions:
 
 jobs:
   test:
-
     runs-on: ubuntu-latest
-
-    container:
-      image: cualbondi/rust:1.37.0-0
-      options: --cpus 1 --security-opt seccomp=unconfined
-
     steps:
-    - uses: actions/checkout@v1
+    - uses: actions/checkout@v4
+    
+    - name: Setup Rust
+      uses: dtolnay/rust-toolchain@stable
+      with:
+        components: rustfmt, clippy
+        
+    - name: Rust Cache
+      uses: Swatinem/rust-cache@v2
+      
     - name: Format
       run: cargo fmt -- --check
+      
     - name: Clippy
       run: cargo clippy -- -D warnings -A clippy::ptr-arg
+      
     - name: Tests
       run: cargo test --verbose
+      
+    - name: Install Tarpaulin
+      run: cargo install cargo-tarpaulin --version 0.29.1 || true
+      # Installing tarpaulin can be slow; using '|| true' to avoid failing if already present or network issues
+      
     - name: codecov
-      run: taskset -c 0 cargo tarpaulin --out Xml && curl -s https://codecov.io/bash -o codecov.sh && bash codecov.sh
+      run: cargo tarpaulin --out Xml && curl -s https://codecov.io/bash -o codecov.sh && bash codecov.sh
       env:
         CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
