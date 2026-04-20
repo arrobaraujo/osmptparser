@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OSM Relation Visualizer & Fixer</title>
+    <link rel="stylesheet" href="style.css">
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body>
+    <div id="app-container">
+        <aside id="sidebar">
+            <header>
+                <h1>OSM Fixer</h1>
+                <p class="subtitle">Analise e ajuste relações de transporte público do OpenStreetMap com precisão.</p>
+            </header>
+
+            <section class="controls">
+                <div class="input-group">
+                    <label for="rel-id">ID da Relação</label>
+                    <input type="text" id="rel-id" placeholder="Ex: 85965" value="85965">
+                </div>
+                
+                <div class="input-group">
+                    <label for="gap-tolerance">Tolerância de Gap (metros)</label>
+                    <input type="number" id="gap-tolerance" value="150" min="0" max="1000">
+                </div>
+
+                <button id="analyze-btn">
+                    <i data-lucide="search"></i>
+                    Analisar Relação
+                </button>
+            </section>
+
+            <section id="stats" class="stats-container" style="display: none;">
+                <div class="stat-card">
+                    <span id="stat-dist" class="stat-value">0 km</span>
+                    <span class="stat-label">Distância Total</span>
+                </div>
+                <div class="stat-card">
+                    <span id="stat-gaps" class="stat-value" style="color: var(--accent);">0</span>
+                    <span class="stat-label">Gaps Encontrados</span>
+                </div>
+            </section>
+
+            <section id="results">
+                <label>Gaps e Descontinuidades</label>
+                <div id="results-list">
+                    <p class="subtitle" style="text-align: center; margin-top: 2rem;">Insira um ID para começar</p>
+                </div>
+            </section>
+
+            <footer>
+                <button id="josm-btn" style="width: 100%; background: #222; display: none;">
+                    <i data-lucide="external-link"></i>
+                    Abrir no JOSM
+                </button>
+            </footer>
+        </aside>
+
+        <main id="map"></main>
+    </div>
+
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+    <!-- Core Logic -->
+    <script src="analyzer.js"></script>
+    <script src="app.js"></script>
+    <script>
+        lucide.createIcons();
+    </script>
+</body>
+</html>

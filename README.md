@@ -1,5 +1,12 @@
 # Open Street Map Public Transport Parser
 
+> [!IMPORTANT]
+> **Aviso de Modificação (20/04/2026):** Este repositório foi modificado por Antigravity AI para incluir uma ferramenta de visualização web e detecção de gaps. Estas alterações foram realizadas sob os termos da licença AGPL v3.
+
+## Web Visualizer (Novo!)
+
+Agora o projeto conta com uma aplicação web completa para visualizar e diagnosticar relações do OSM diretamente no navegador. Veja o diretório `webapp/` para mais detalhes.
+
 A tool to parse broken/disconnected relations from openstreetmap, reconnect them with some tolerance, sort the internal points, and output them as GeoJSON linestrings.
 
 It can understand and reconstruct

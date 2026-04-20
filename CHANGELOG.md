@@ -1,3 +1,12 @@
+## v2.3.0 (2026-04-20)
+
+**Modificado por Antigravity AI (em nome do Usuário)**
+
+ - Adicionado: Aplicação Web Visualizer no diretório `webapp/`.
+ - Adicionado: Visualização baseada em navegador para relações OSM com detecção de gaps.
+ - Adicionado: Integração com Overpass API para análise em tempo real.
+ - Adicionado: Integração com Controle Remoto do JOSM.
+
 ## v2.2.0
 
 Added filtering by negation
