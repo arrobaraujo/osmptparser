@@ -1,5 +1,5 @@
-use osmptparser::Parser as OsmParser;
 use clap::Parser;
+use osmptparser::Parser as OsmParser;
 
 /// Openstreetmap areas and public transport (ptv2) parser
 #[derive(Parser, Debug)]
