@@ -1,77 +1,99 @@
 # Open Street Map Public Transport Parser
 
 > [!IMPORTANT]
-> **Aviso de Modificação (20/04/2026):** Este repositório foi modificado por Antigravity AI para incluir uma ferramenta de visualização web e detecção de gaps. Estas alterações foram realizadas sob os termos da licença AGPL v3.
+> **Aviso de Modificação (20/04/2026):** Este repositório foi modificado e organizado para incluir uma ferramenta de visualização web, detecção de gaps e CI modernizado. Estas alterações foram realizadas sob os termos da licença AGPL v3.
 
 ## Web Visualizer (Novo!)
 
-Agora o projeto conta com uma aplicação web completa para visualizar e diagnosticar relações do OSM diretamente no navegador. Veja o diretório `webapp/` para mais detalhes.
+O projeto agora conta com uma aplicação web completa para visualizar e diagnosticar relações do OSM diretamente no navegador. Ela permite identificar gaps no traçado, verificar a ordem dos nós e integrar-se com o JOSM.
 
-A tool to parse broken/disconnected relations from openstreetmap, reconnect them with some tolerance, sort the internal points, and output them as GeoJSON linestrings.
+### Como executar
+Para usar o visualizador, basta abrir o arquivo `webapp/index.html` em qualquer navegador moderno. Não é necessário servidor backend (ele utiliza a API oficial do Overpass).
 
-It can understand and reconstruct
- - relations that represent public transport v2
- - ways and relations that represent areas
+1. Abra `webapp/index.html`.
+2. Insira o **ID de uma Relação OSM** (ex: `1613149` para uma linha de ônibus).
+3. Defina a **Tolerância de Gap** em metros (padrão: 150m).
+4. Clique em **Analisar**.
 
-Blazing fast by design: every step in the process pipeline is fully parallelized for maximum speed using all available cpus by default.
+**Funcionalidades:**
+- **Visualização Geolocalizada:** Mapa interativo com o traçado da relação.
+- **Detecção de Gaps:** Identifica onde o traçado está quebrado e qual a distância do salto.
+- **Integração JOSM:** Botão para carregar a área e a relação diretamente no editor JOSM (via Controle Remoto).
+- **Dark Mode:** Interface moderna e otimizada para análise.
 
-### How it works
+---
 
-1. Reads data from a .pbf file, extracting ways and relations filtered by attributes specified via the `--filter` argument.
-2. Processes each relation as follows:
-   1. Sorts all the ways within the relation based on proximity.
-   2. Joins ways that share identical lat/lng coordinates at their first or last nodes, combining them into a single LineString.
-   3. If multiple LineStrings remain after this step:
-      - It checks for gaps.
-      - If the gaps are smaller than the specified gap threshold (in meters, default: 150), they are joined into one LineString.
-3. Outputs a JSON array, with one GeoJSON feature per way or relation found, including:
-   - For areas: a single LineString or MultiLineString feature.
-   - For public transport: a LineString representing the full path and an array of points representing the stops.
+## Parser CLI (Rust)
 
-[See the blogpost](https://jperelli.com.ar/post/2019/08/12/oxidizing-cualbondi/) for a very detailed description
+A ferramenta CLI permite processar arquivos `.osm.pbf` em larga escala, reconectando relações descontinuadas, ordenando pontos internos e exportando-os como GeoJSON.
 
-### Status
+### Como funciona
 
-[![Status](https://github.com/cualbondi/osmptparser/workflows/Test/badge.svg)](https://github.com/cualbondi/osmptparser/actions)
-[![codecov](https://codecov.io/gh/cualbondi/osmptparser/branch/master/graph/badge.svg)](https://codecov.io/gh/cualbondi/osmptparser)
+1. Lê dados de um arquivo `.pbf`, extraindo caminhos e relações filtrados por atributos.
+2. Processa cada relação:
+   - Ordena os caminhos (ways) por proximidade.
+   - Une caminhos que compartilham coordenadas idênticas.
+   - Une gaps menores que o limite especificado (padrão: 150m).
+3. Exporta um array JSON com cada funcionalidade em formato GeoJSON.
 
-## Try it
+### Instalação e Requisitos
 
-```
-git clone git@github.com:cualbondi/osmptparser.git
+- **Rust 1.77 ou superior** (necessário para suporte ao `Cargo.lock` v4 e `clap v4`).
+- Para instalar/atualizar: `rustup update stable`
+
+### Exemplos de Uso
+
+**Clonar e testar rápido:**
+```bash
+git clone https://github.com/arrobaraujo/osmptparser.git
+cd osmptparser
 wget http://download.geofabrik.de/south-america/ecuador-latest.osm.pbf
-cargo run --example main ecuador-latest.osm.pbf
+cargo run --release ./ecuador-latest.osm.pbf --example main
 ```
 
-Time it
-
-```
-cargo build --release --example main && /usr/bin/time -v target/release/examples/main ecuador-latest.osm.pbf
-```
-
-## CLI
-
-```
+**Filtrar áreas específicas:**
+```bash
 cargo run --release ./ecuador-latest.osm.pbf --filter "boundary=national_park"
 ```
-you should get a json list with one geojson per area that matches with the filter
 
-```
+**Extrair transporte público (PTv2):**
+```bash
 cargo run --release ./ecuador-latest.osm.pbf --filter-ptv2
 ```
-you should get a json list with one geojson per ptv2 containing a linestring and each stop
 
-## Run CI linter + recommendations + tests
-
+**Opções de Performance:**
+```bash
+# Usar 8 CPUs e tolerância de 200 metros
+cargo run --release ./ecuador-latest.osm.pbf --filter-ptv2 --cpus 8 --gap 200.0
 ```
-cargo fmt -- --check && cargo clippy -- -D warnings -A clippy::ptr-arg && cargo test
+
+---
+
+## Desenvolvimento e CI
+
+Para garantir a qualidade do código, o projeto utiliza um workflow rigoroso no GitHub Actions.
+
+**Executar linter e testes localmente:**
+```bash
+cargo fmt -- --check
+cargo clippy -- -D warnings -A clippy::ptr-arg
+cargo test
 ```
 
-## Build pbf test file
+### CI Status
+[![Status](https://github.com/arrobaraujo/osmptparser/workflows/Test/badge.svg)](https://github.com/arrobaraujo/osmptparser/actions)
+[![codecov](https://codecov.io/gh/arrobaraujo/osmptparser/branch/master/graph/badge.svg)](https://codecov.io/gh/arrobaraujo/osmptparser)
 
-```
+---
+
+## Gerar arquivos de teste customizados
+
+Caso queira extrair relações específicas de um PBF grande para testes:
+```bash
 wget http://download.geofabrik.de/south-america/ecuador-latest.osm.pbf
 osmconvert ecuador-latest.osm.pbf -o=ecuador.o5m
 osmfilter ecuador.o5m --keep= --keep-relations="@id=85965 =2030162" > test.o5m
 osmconvert test.o5m -o=test.pbf
 ```
+
+[Veja o blogpost original](https://jperelli.com.ar/post/2019/08/12/oxidizing-cualbondi/) para uma descrição detalhada da lógica de "oxidação" do parser.
