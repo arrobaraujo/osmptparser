@@ -16,8 +16,9 @@ crate-type = ["rlib", "cdylib"]
 # osm_pbf_iter = { git = "https://github.com/astro/rust-osm-pbf-iter", rev="a7849efd7ac33768f0e982879ca1c6acc3ff82a6" }
 osm_pbf_iter = "0.2.1"
 crossbeam = "0.8.4"
+crossbeam-channel = "0.5.15"
 num_cpus = "1.16.0"
-structopt = "0.3.26"
+clap = { version = "4.5", features = ["derive"] }
 serde_json = "1.0.127"
 
 [[example]]

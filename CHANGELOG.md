@@ -6,6 +6,9 @@
  - Adicionado: Visualização baseada em navegador para relações OSM com detecção de gaps.
  - Adicionado: Integração com Overpass API para análise em tempo real.
  - Adicionado: Integração com Controle Remoto do JOSM.
+ - Segurança: Removida a dependência vulnerável `atty` (unaligned read #1).
+ - Segurança: Corrigida vulnerabilidade de Double Free no `crossbeam-channel` atualizando para v0.5.15.
+ - Modificado: Migração do parser de CLI de `structopt` para `clap` v4 para melhor suporte a terminais nativos.
 
 ## v2.2.0
 
